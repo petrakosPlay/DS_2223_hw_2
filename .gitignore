@@ -4,12 +4,17 @@
 
 #Folders
 .vscode
-build
-debug
-ubuntu
 
 #ObjectFiles
 *.o
 
+#CMake
+CMakeFiles
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+
 #Other
 *.swp
+
+
