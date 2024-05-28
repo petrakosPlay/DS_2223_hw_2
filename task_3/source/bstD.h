@@ -8,4 +8,5 @@ struct node {
 struct bst {
 	struct node *root;
 	int nodeCount;
+	size_t itemSize;
 };
