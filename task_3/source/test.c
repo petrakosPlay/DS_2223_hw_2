@@ -28,7 +28,9 @@ int main(void) {
 	printf("Total number of nodes is:%d\n", nodeCount);
 
 	
-	Xitem buf[10] = {1,2,3,4,5,6,7,8,9,10};
+	Xitem buf[10] = {1,22,3,44,5,66,7,88,9,10};
+//	Xitem buf[3] = {1,2,3};
+	//Xitem buf[10] = {1,2,3,4,5,6,7,8,9,10};
 	for(int i=0; i<10; ++i) {
 		bstInsert(bst, &buf[i], compareItem);
 	}

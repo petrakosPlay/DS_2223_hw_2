@@ -25,18 +25,16 @@ int bstCount(struct bst *bst) {
 void bstInsert(struct bst *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
 	struct node *currentNode = NULL;
 	struct node **childNode = &(bst->root);
-	while(1) {
-		if(*childNode == NULL) {
-			*childNode = (struct node *) malloc(sizeof(**childNode));
-			(*childNode)->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
-			memcpy((*childNode)->item, newItem, bst->itemSize);
-			(*childNode)->leftChild = (*childNode)->rightChild = NULL;
-			bst->nodeCount++;
-			break;
-		}
+	while(*childNode != NULL) {
 		currentNode = *childNode;
 		childNode = (compareItem(newItem, currentNode->item) == -1) ? &(currentNode->leftChild) : &(currentNode->rightChild);
 	}
+
+	*childNode = (struct node *) malloc(sizeof(**childNode));
+	(*childNode)->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
+	memcpy((*childNode)->item, newItem, bst->itemSize);
+	(*childNode)->leftChild = (*childNode)->rightChild = NULL;
+	bst->nodeCount++;
 }
 
 
@@ -54,7 +52,8 @@ void bstTraverseLevelOrder(struct bst *bst, void(*printItem)(void *)) {
 		printItem(tempNode.item);
 		if(tempNode.leftChild  != NULL)	qInsert(queue, tempNode.leftChild);
 		if(tempNode.rightChild != NULL)	qInsert(queue, tempNode.rightChild);
-	}	
+	}
+	qDelete(&queue);
 }
 
 
