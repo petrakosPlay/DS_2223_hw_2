@@ -23,17 +23,8 @@ int bstCount(struct bst *bst) {
 }
 
 void bstInsert(struct bst *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
-	if(bst->root == NULL) {
-		bst->root = (struct node *) malloc(sizeof(*(bst->root)));
-		bst->root->item = malloc(bst->itemSize);
-		memcpy(bst->root->item, newItem, bst->itemSize);
-		bst->root->leftChild = bst->root->rightChild = NULL;
-		bst->nodeCount++;
-		return;
-	}
-
-	struct node *currentNode = bst->root;
-	struct node **childNode = (compareItem(newItem, currentNode->item) == -1) ? &(currentNode->leftChild) : &(currentNode->rightChild);
+	struct node *currentNode = NULL;
+	struct node **childNode = &(bst->root);
 	while(1) {
 		if(*childNode == NULL) {
 			*childNode = (struct node *) malloc(sizeof(**childNode));
@@ -46,25 +37,7 @@ void bstInsert(struct bst *bst, void *newItem, int(*compareItem)(void *item1, vo
 		currentNode = *childNode;
 		childNode = (compareItem(newItem, currentNode->item) == -1) ? &(currentNode->leftChild) : &(currentNode->rightChild);
 	}
-
-
-/*
-	struct node *currentNode = bst->root;
-	while(1) {
-		if(currentNode == NULL) {
-			currentNode = (struct node *) malloc(sizeof(*currentNode));
-			currentNode->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
-			memcpy(currentNode->item, newItem, bst->itemSize);
-			currentNode->leftChild = currentNode->rightChild = NULL;
-			break;
-		}
-		currentNode = (compareItem(newItem, currentNode->item) == -1) ? currentNode->leftChild : currentNode->rightChild;
-	}
-	bst->nodeCount++;
-	if(bst->root == NULL) bst->root = currentNode;
-*/
 }
-
 
 
 void bstTraverseLevelOrder(struct bst *bst, void(*printItem)(void *)) {
@@ -87,7 +60,6 @@ void bstTraverseLevelOrder(struct bst *bst, void(*printItem)(void *)) {
 
 void bstTraverse(struct bst *bst, enum TraverseOrder traverseOrder, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
-	printf("in bstTraverse\n");
 	if(traverseOrder == LEVEL_ORDER)
 		bstTraverseLevelOrder(bst, printItem);
 }
