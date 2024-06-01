@@ -18,9 +18,14 @@ void bstDelete(struct bst **bst) {
 	*bst = NULL;
 }
 
+
+
 int bstCount(struct bst *bst) {
 	return bst->nodeCount;
 }
+
+
+
 
 void bstInsert(struct bst *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
 	struct node *currentNode = NULL;
@@ -36,6 +41,28 @@ void bstInsert(struct bst *bst, void *newItem, int(*compareItem)(void *item1, vo
 	(*childNode)->leftChild = (*childNode)->rightChild = NULL;
 	bst->nodeCount++;
 }
+
+void insertR(struct node **currentNode, void *newItem, size_t itemSize, int(*compareItem)(void *item1, void *item2)) {
+	if(*currentNode == NULL) {
+		*currentNode = (struct node *) malloc(sizeof(**currentNode));
+		(*currentNode)->item = malloc(itemSize);   //assigns void * to a void * variable.No need for casting.
+		memcpy((*currentNode)->item, newItem, itemSize);
+		(*currentNode)->leftChild = (*currentNode)->rightChild = NULL;
+		return;
+	}
+	currentNode = (compareItem(newItem, (*currentNode)->item) == -1) ? &((*currentNode)->leftChild) : &((*currentNode)->rightChild);
+	insertR(currentNode, newItem, itemSize, compareItem);
+}
+
+
+void bstInsertR(struct bst *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
+	insertR(&(bst->root), newItem, bst->itemSize, compareItem);
+	bst->nodeCount++;
+}
+
+
+
+
 
 
 void bstTraverseLevelOrder(struct bst *bst, void(*printItem)(void *)) {
@@ -56,9 +83,67 @@ void bstTraverseLevelOrder(struct bst *bst, void(*printItem)(void *)) {
 	qDelete(&queue);
 }
 
+void traversePreOrderR(struct node *currentNode, void(*printItem)(void *)) {
+	if(currentNode == NULL) return;
+	printItem(currentNode->item);
+	traversePreOrderR(currentNode->leftChild, printItem);
+	traversePreOrderR(currentNode->rightChild, printItem);
+}
+
+void traverseInOrderR(struct node *currentNode, void(*printItem)(void *)) {
+	if(currentNode == NULL) return;
+	traverseInOrderR(currentNode->leftChild, printItem);
+	printItem(currentNode->item);
+	traverseInOrderR(currentNode->rightChild, printItem);
+}
+
+void traversePostOrderR(struct node *currentNode, void(*printItem)(void *)) {
+	if(currentNode == NULL) return;
+	traversePostOrderR(currentNode->leftChild, printItem);
+	traversePostOrderR(currentNode->rightChild, printItem);
+	printItem(currentNode->item);
+}
+
+
+void bstTraversePreOrder(struct bst *bst, void(*printItem)(void *)) {
+	traversePreOrderR(bst->root, printItem);
+}
+
+void bstTraverseInOrder(struct bst *bst, void(*printItem)(void *)) {
+	traverseInOrderR(bst->root, printItem);
+}
+
+void bstTraversePostOrder(struct bst *bst, void(*printItem)(void *)) {
+	traversePostOrderR(bst->root, printItem);
+}
+
+
 
 void bstTraverse(struct bst *bst, enum TraverseOrder traverseOrder, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
-	if(traverseOrder == LEVEL_ORDER)
-		bstTraverseLevelOrder(bst, printItem);
+
+	switch(traverseOrder) {
+		case LEVEL_ORDER:
+			bstTraverseLevelOrder(bst, printItem);
+			break;
+		case PRE_ORDER:
+			bstTraversePreOrder(bst, printItem);
+			break;
+		case IN_ORDER:
+			bstTraverseInOrder(bst, printItem);
+			break;
+		case POST_ORDER:
+			bstTraversePostOrder(bst, printItem);
+			break;
+		default:
+			break;
+	}
 }
+
+/*
+void bstDelete(struct bst **bst) {
+	deleteR((*bst)->root);
+	free(*bst); 
+}
+*/
+

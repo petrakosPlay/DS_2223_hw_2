@@ -32,13 +32,21 @@ int main(void) {
 //	Xitem buf[3] = {1,2,3};
 	//Xitem buf[10] = {1,2,3,4,5,6,7,8,9,10};
 	for(int i=0; i<10; ++i) {
-		bstInsert(bst, &buf[i], compareItem);
+		bstInsertR(bst, &buf[i], compareItem);
+		//bstInsert(bst, &buf[i], compareItem);
 	}
 
 	nodeCount = bstCount(bst);
 	printf("Total number of nodes is:%d\n", nodeCount);
 	
 	bstTraverse(bst, LEVEL_ORDER, printItem);
+	printf("\n");
+	bstTraverse(bst, PRE_ORDER, printItem);
+	printf("\n");
+	bstTraverse(bst, IN_ORDER, printItem);
+	printf("\n");
+	bstTraverse(bst, POST_ORDER, printItem);
+	printf("\n");
 
 
 	bstDelete(&bst);	
