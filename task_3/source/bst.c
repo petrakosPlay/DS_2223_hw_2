@@ -5,29 +5,22 @@
 #include "bstTraverseOrder.h"
 #include "Queue.h"
 
-void bstInitialize(struct bst **bst, size_t itemSize) {
-	*bst = (struct bst *) malloc(sizeof(**bst));
+void bstInitialize(BST **bst, size_t itemSize) {
+	*bst = (BST *) malloc(sizeof(**bst));
 	(*bst)->root = NULL;
 	(*bst)->nodeCount = 0;
 	(*bst)->itemSize = itemSize;
 }
 
 
-void bstDelete(struct bst **bst) {
-	free(*bst);
-	*bst = NULL;
-}
-
-
-
-int bstCount(struct bst *bst) {
+int bstCount(BST *bst) {
 	return bst->nodeCount;
 }
 
 
 
 
-void bstInsert(struct bst *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
+void bstInsert(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
 	struct node *currentNode = NULL;
 	struct node **childNode = &(bst->root);
 	while(*childNode != NULL) {
@@ -55,7 +48,7 @@ void insertR(struct node **currentNode, void *newItem, size_t itemSize, int(*com
 }
 
 
-void bstInsertR(struct bst *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
+void bstInsertR(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
 	insertR(&(bst->root), newItem, bst->itemSize, compareItem);
 	bst->nodeCount++;
 }
@@ -65,7 +58,7 @@ void bstInsertR(struct bst *bst, void *newItem, int(*compareItem)(void *item1, v
 
 
 
-void bstTraverseLevelOrder(struct bst *bst, void(*printItem)(void *)) {
+void bstTraverseLevelOrder(BST *bst, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
 
 	Queue *queue = NULL;
@@ -105,21 +98,19 @@ void traversePostOrderR(struct node *currentNode, void(*printItem)(void *)) {
 }
 
 
-void bstTraversePreOrder(struct bst *bst, void(*printItem)(void *)) {
+void bstTraversePreOrder(BST *bst, void(*printItem)(void *)) {
 	traversePreOrderR(bst->root, printItem);
 }
 
-void bstTraverseInOrder(struct bst *bst, void(*printItem)(void *)) {
+void bstTraverseInOrder(BST *bst, void(*printItem)(void *)) {
 	traverseInOrderR(bst->root, printItem);
 }
 
-void bstTraversePostOrder(struct bst *bst, void(*printItem)(void *)) {
+void bstTraversePostOrder(BST *bst, void(*printItem)(void *)) {
 	traversePostOrderR(bst->root, printItem);
 }
 
-
-
-void bstTraverse(struct bst *bst, enum TraverseOrder traverseOrder, void(*printItem)(void *)) {
+void bstTraverse(BST *bst, enum TraverseOrder traverseOrder, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
 
 	switch(traverseOrder) {
@@ -140,10 +131,30 @@ void bstTraverse(struct bst *bst, enum TraverseOrder traverseOrder, void(*printI
 	}
 }
 
-/*
-void bstDelete(struct bst **bst) {
-	deleteR((*bst)->root);
-	free(*bst); 
+
+
+void bstClearR(struct node *currentNode) {
+	if(currentNode == NULL) return;
+	bstClearR(currentNode->leftChild);
+	bstClearR(currentNode->rightChild);
+	//currentNode->leftChild = NULL;   This is not needed, but is it a good practice? Is it irrelevant?
+	//currentNode->rightChild = NULL;
+	free(currentNode->item);
+	free(currentNode);
 }
-*/
+
+
+void bstClear(BST *bst) {
+	if(bst->root == NULL) return;
+	bstClearR(bst->root);
+	bst->nodeCount = 0;
+	bst->root = NULL;
+}
+
+
+void bstDelete(BST **bst) {
+	bstClear(*bst);
+	free(*bst); 
+	*bst = NULL;
+}
 

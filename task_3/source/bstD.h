@@ -5,8 +5,8 @@ struct node {
 };
 
 
-struct bst {
+typedef struct BST {
 	struct node *root;
 	int nodeCount;
 	size_t itemSize;
-};
+} BST;
