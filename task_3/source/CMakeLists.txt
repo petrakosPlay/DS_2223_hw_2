@@ -15,6 +15,6 @@ add_executable(test test.c bst.c)
 #add_executable(${EXECUTABLE} test.c bst.c)
 target_link_directories(test PRIVATE C:\\Users\\petrakos\\Projects\\Libraries\\lib)
 target_include_directories(test PRIVATE C:\\Users\\petrakos\\Projects\\Libraries\\include)
-target_link_libraries(test Queue)
+target_link_libraries(test Queue Stack)
 
 #============================================================================================================

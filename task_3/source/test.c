@@ -19,7 +19,7 @@ int compareItem(void *item1, void *item2) {
 
 
 int main(void) {
-	struct bst *bst = NULL;
+	BST *bst = NULL;
 	//printf("bst points to %p\n", bst);
   	bstInitialize(&bst, sizeof(Xitem));
 	//printf("bst points to %p\n", bst);
@@ -46,6 +46,8 @@ int main(void) {
 	bstTraverse(bst, IN_ORDER, printItem);
 	printf("\n");
 	bstTraverse(bst, POST_ORDER, printItem);
+	printf("\n");
+	bstTraverse(bst, POST_ORDER_2, printItem);
 	printf("\n");
 
 

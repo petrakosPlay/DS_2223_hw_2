@@ -1,12 +1,12 @@
-struct node {
+typedef struct bstNode {
 	void *item;
-	struct node *leftChild;
-	struct node *rightChild;
-};
+	struct bstNode *leftChild;
+	struct bstNode *rightChild;
+} bstNode;
 
 
 typedef struct BST {
-	struct node *root;
+	bstNode *root;
 	int nodeCount;
 	size_t itemSize;
 } BST;

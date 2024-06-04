@@ -1,0 +1,87 @@
+1. don't care.
+2. don't care.
+3 & 4. done.
+5. Alreadt implemented in previous project.
+6. 
+
+============================================================================================================
+3 & 4. I combined two tasks in one exercise.
+
+So one of the hardest parts of the exercise was traversing the tree in post order fashion. It can be done
+either using recursion or using a loop. The recursive method was fairly simple. The loop one was tricky.
+So I found several algorithms in geeksforgeeks.
+
+
+
+- The first one is the following which is bstTraversePostOrder2 in bst.c. Very nice.
+
+We have discussed iterative inorder and iterative preorder traversals. In this post, iterative postorder traversal is discussed, which is more complex than the other two traversals (due to its nature of non-tail recursion, there is an extra statement after the final recursive call to itself). Postorder traversal can easily be done using two stacks, though. The idea is to push reverse postorder traversal to a stack. Once we have the reversed postorder traversal in a stack, we can just pop all items one by one from the stack and print them; this order of printing will be in postorder because of the LIFO property of stacks. Now the question is, how to get reversed postorder elements in a stack – the second stack is used for this purpose. For example, in the following tree, we need to get 1, 3, 7, 6, 2, 5, 4 in a stack. If we take a closer look at this sequence, we can observe that this sequence is very similar to the preorder traversal. The only difference is that the right child is visited before left child, and therefore the sequence is “root right left” instead of “root left right”. So, we can do something like iterative preorder traversal with the following differences: 
+a) Instead of printing an item, we push it to a stack. 
+b) We push the left subtree before the right subtree.
+Following is the complete algorithm. After step 2, we get the reverse of a postorder traversal in the second stack. We use the first stack to get the correct order. 
+ 
+
+1. Push root to first stack.
+2. Loop while first stack is not empty
+   2.1 Pop a node from first stack and push it to second stack
+   2.2 Push left and right children of the popped node to first stack
+3. Print contents of second stack
+
+
+
+
+- The second one is the following which is bstTraversePostOrder3 in bst.c. This version is fine but I did not fully implement 
+it because it was a bit hard to implement the "If the popped item has a right child and the right child is at top of stack" condition.
+GeeksforGeeks used a stack that only stored a reference to an item, i.e. a pointer. So their implementation was 
+
+peek(stack) == root->right //compares the addresses stored to two pointer variables.
+
+However my stack stores a copy of the item, in our case a bstNode, not just a reference to it.
+That created a problem for me. In case the values of the nodes of the bst where not unique, I could potentially run in a loop.
+It is not easy to explain in words but you can verify it by running the algorithm to the tree described below. There are 
+4 Cs in a row. In this case when you find C in the top of the stack you do not know which C it is, i.e. whose child it is.
+If you run the steps you will see that it does not end well.
+Maybe I could store a pointer to the node in my Stack instead of the node itself. But I was not in the mood to experiment
+even more at this point.
+
+Nodes and children in level order NODE -> LEFT_CHILD, RIGHT_CHILD
+F -> C1,E
+C1-> A,C2
+E-> E
+A->
+C2-> ,C3
+D->
+C3-> ,C4
+C4->
+
+				F
+	C1						E
+A		C2				D
+			C3
+				C4
+				
+
+We have discussed a simple iterative postorder traversal using two stacks in the previous post. In this post, an approach with only one stack is discussed.
+The idea is to move down to leftmost node using left pointer. While moving down, push root and root’s right child to stack. Once we reach leftmost node, print it if it doesn’t have a right child. If it has a right child, then change root so that the right child is processed before. 
+Following is detailed algorithm. 
+
+1.1 Create an empty stack
+2.1 Do following while root is not NULL
+    a) Push root's right child and then root to stack.
+    b) Set root as root's left child.
+2.2 Pop an item from stack and set it as root.
+    a) If the popped item has a right child and the right child 
+       is at top of stack, then remove the right child from stack,
+       push the root back and set root as root's right child.
+    b) Else print root's data and set root as NULL.
+2.3 Repeat steps 2.1 and 2.2 while stack is not empty.
+
+
+In general some key ideas that I saw/thought of while doing this are
+
+- Use two stacks. One is just a temporary vessel, the other one builds/holds the desired order.
+- Pop, pop, push in order to change the order in which nodes are stored in the stack
+- Use an extra structure in general. Much like the first note. It could be just an array/string that stores the result,
+much like a stringbuilder that grows until it contains all elements.
+- Like Koumparakis said, I can use loop and a stack to emulate recursion.
+

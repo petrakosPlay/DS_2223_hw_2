@@ -4,6 +4,7 @@
 #include "bstD.h"
 #include "bstTraverseOrder.h"
 #include "Queue.h"
+#include "Stack.h"
 
 void bstInitialize(BST **bst, size_t itemSize) {
 	*bst = (BST *) malloc(sizeof(**bst));
@@ -21,23 +22,23 @@ int bstCount(BST *bst) {
 
 
 void bstInsert(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
-	struct node *currentNode = NULL;
-	struct node **childNode = &(bst->root);
+	bstNode *currentNode = NULL;
+	bstNode **childNode = &(bst->root);
 	while(*childNode != NULL) {
 		currentNode = *childNode;
 		childNode = (compareItem(newItem, currentNode->item) == -1) ? &(currentNode->leftChild) : &(currentNode->rightChild);
 	}
 
-	*childNode = (struct node *) malloc(sizeof(**childNode));
+	*childNode = (bstNode *) malloc(sizeof(**childNode));
 	(*childNode)->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
 	memcpy((*childNode)->item, newItem, bst->itemSize);
 	(*childNode)->leftChild = (*childNode)->rightChild = NULL;
 	bst->nodeCount++;
 }
 
-void insertR(struct node **currentNode, void *newItem, size_t itemSize, int(*compareItem)(void *item1, void *item2)) {
+void insertR(bstNode **currentNode, void *newItem, size_t itemSize, int(*compareItem)(void *item1, void *item2)) {
 	if(*currentNode == NULL) {
-		*currentNode = (struct node *) malloc(sizeof(**currentNode));
+		*currentNode = (bstNode *) malloc(sizeof(**currentNode));
 		(*currentNode)->item = malloc(itemSize);   //assigns void * to a void * variable.No need for casting.
 		memcpy((*currentNode)->item, newItem, itemSize);
 		(*currentNode)->leftChild = (*currentNode)->rightChild = NULL;
@@ -63,10 +64,10 @@ void bstTraverseLevelOrder(BST *bst, void(*printItem)(void *)) {
 
 	Queue *queue = NULL;
 	int maxNumberOfItems = 100;
-	qInitialize(&queue, maxNumberOfItems, sizeof(struct node));
+	qInitialize(&queue, maxNumberOfItems, sizeof(bstNode));
 	qInsert(queue, bst->root);
 
-	struct node tempNode;
+	bstNode tempNode;
 	while(!qIsEmpty(queue)) {
 		qRemove(queue, &tempNode);
 		printItem(tempNode.item);
@@ -76,21 +77,21 @@ void bstTraverseLevelOrder(BST *bst, void(*printItem)(void *)) {
 	qDelete(&queue);
 }
 
-void traversePreOrderR(struct node *currentNode, void(*printItem)(void *)) {
+void traversePreOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	if(currentNode == NULL) return;
 	printItem(currentNode->item);
 	traversePreOrderR(currentNode->leftChild, printItem);
 	traversePreOrderR(currentNode->rightChild, printItem);
 }
 
-void traverseInOrderR(struct node *currentNode, void(*printItem)(void *)) {
+void traverseInOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	if(currentNode == NULL) return;
 	traverseInOrderR(currentNode->leftChild, printItem);
 	printItem(currentNode->item);
 	traverseInOrderR(currentNode->rightChild, printItem);
 }
 
-void traversePostOrderR(struct node *currentNode, void(*printItem)(void *)) {
+void traversePostOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	if(currentNode == NULL) return;
 	traversePostOrderR(currentNode->leftChild, printItem);
 	traversePostOrderR(currentNode->rightChild, printItem);
@@ -110,6 +111,63 @@ void bstTraversePostOrder(BST *bst, void(*printItem)(void *)) {
 	traversePostOrderR(bst->root, printItem);
 }
 
+void bstTraversePostOrder2(BST *bst, void(*printItem)(void *)) {
+	Stack *stack1, *stack2;
+	stackInitialize(&stack1, 100, sizeof(bstNode));
+	stackInitialize(&stack2, 100, sizeof(bstNode));
+
+	bstNode tempNode;
+	stackPush(stack1, bst->root);
+	while(!stackIsEmpty(stack1)) {
+		stackPop(stack1, &tempNode);
+		stackPush(stack2, &tempNode);
+		if(tempNode.leftChild != NULL)	stackPush(stack1, tempNode.leftChild);
+	    if(tempNode.rightChild != NULL) stackPush(stack1, tempNode.rightChild);
+	}
+
+	while(!stackIsEmpty(stack2)) {
+		stackPop(stack2, &tempNode);
+		printItem(tempNode.item);
+	}
+	
+	stackDelete(&stack1);
+	stackDelete(&stack2);
+}
+
+//Not fully implemented/tested. Read notes.txt for more details...
+/*
+void bstTraversePostOrder3(BST *bst, void(*printItem)(void *)) {
+	if(bst->root == NULL) return;
+	Stack *stack;
+	stackInitialize(&stack, 100, sizeof(bstNode));
+	bstNode *rootNode, poppedNode1, poppedNode1;
+	rootNode = bst->root;
+
+	do {
+		while(rootNode != NULL) {
+			if (rootNode->rightChild != NULL)	stackPush(&stack, rootNode->rightChild);
+			stackPush(&stack, rootNode);
+			rootNode = rootNode->leftChild;
+		}
+		
+		stackPop(stack, &poppedNode1);
+		if(poppedNode1.rightChild != NULL)
+			bstNode stackTopNode;
+			stackPeek(stack, &stackTopNode);
+			if(compareItem(poppedNode1.rightChild->item, stackTopNode.item) { 
+				stackPop(stack, &poppedNode2); 
+				rootNode = &poppedNode2; 
+				stackPush(stack, &poppedNode1);
+			}
+		}
+		else {
+			printItem(poppedNode1.item);
+			rootNode = NULL;
+		}
+	} while(!stackIsEmpty(stack));
+}
+*/
+
 void bstTraverse(BST *bst, enum TraverseOrder traverseOrder, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
 
@@ -126,6 +184,9 @@ void bstTraverse(BST *bst, enum TraverseOrder traverseOrder, void(*printItem)(vo
 		case POST_ORDER:
 			bstTraversePostOrder(bst, printItem);
 			break;
+		case POST_ORDER_2:
+			bstTraversePostOrder2(bst, printItem);
+			break;
 		default:
 			break;
 	}
@@ -133,12 +194,12 @@ void bstTraverse(BST *bst, enum TraverseOrder traverseOrder, void(*printItem)(vo
 
 
 
-void bstClearR(struct node *currentNode) {
+void bstClearR(bstNode *currentNode) {
 	if(currentNode == NULL) return;
 	bstClearR(currentNode->leftChild);
 	bstClearR(currentNode->rightChild);
-	//currentNode->leftChild = NULL;   This is not needed, but is it a good practice? Is it irrelevant?
-	//currentNode->rightChild = NULL;
+	currentNode->leftChild = NULL;   //This is not needed, but I don't mind. Is it a good practice? Is it irrelevant? I have no idea.
+	currentNode->rightChild = NULL;
 	free(currentNode->item);
 	free(currentNode);
 }
