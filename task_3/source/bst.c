@@ -56,8 +56,7 @@ void bstInsertR(BST *bst, void *newItem, int(*compareItem)(void *item1, void *it
 
 
 
-
-
+/* Level Order */
 
 void bstTraverseLevelOrder(BST *bst, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
@@ -77,6 +76,9 @@ void bstTraverseLevelOrder(BST *bst, void(*printItem)(void *)) {
 	qDelete(&queue);
 }
 
+
+
+/* Pre Order */
 void traversePreOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	if(currentNode == NULL) return;
 	printItem(currentNode->item);
@@ -84,6 +86,31 @@ void traversePreOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	traversePreOrderR(currentNode->rightChild, printItem);
 }
 
+void bstTraversePreOrder(BST *bst, void(*printItem)(void *)) {
+	traversePreOrderR(bst->root, printItem);
+}
+
+
+void bstTraversePreOrder2(BST *bst, void(*printItem)(void *)) {
+	if(bst->root==NULL)	return;
+	Stack *stack;
+	stackInitialize(&stack, 100, sizeof(bstNode));
+	printItem(bst->root->item);
+	if(bst->root->rightChild != NULL)	stackPush(stack, bst->root->rightChild);
+	if(bst->root->leftChild  != NULL)	stackPush(stack, bst->root->leftChild);
+	bstNode poppedNode;
+	while(!stackIsEmpty(stack)) {
+		stackPop(stack, &poppedNode);
+		printItem(poppedNode.item);
+		if(poppedNode.rightChild != NULL)	stackPush(stack, poppedNode.rightChild);
+		if(poppedNode.leftChild  != NULL)	stackPush(stack, poppedNode.leftChild);
+	}
+	stackDelete(&stack);
+}
+
+
+
+/* In Order */
 void traverseInOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	if(currentNode == NULL) return;
 	traverseInOrderR(currentNode->leftChild, printItem);
@@ -91,6 +118,29 @@ void traverseInOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	traverseInOrderR(currentNode->rightChild, printItem);
 }
 
+void bstTraverseInOrder(BST *bst, void(*printItem)(void *)) {
+	traverseInOrderR(bst->root, printItem);
+}
+
+void bstTraverseInOrder2(BST *bst, void(*printItem)(void *)) {
+	if(bst->root==NULL)	return;
+	Stack *stack;
+	stackInitialize(&stack, 100, sizeof(bstNode));
+	stackPush(stack, bst->root);
+	bstNode *currentNode = bst->root->leftChild, poppedNode;
+	while(!stackIsEmpty(stack) || currentNode != NULL) {
+		while(currentNode != NULL) {
+			stackPush(stack, currentNode);
+			currentNode = currentNode->leftChild;
+		}
+		stackPop(stack, &poppedNode);
+		printItem(poppedNode.item);
+		currentNode = poppedNode.rightChild;
+	}
+	stackDelete(&stack);
+}
+
+/* Post Order */ 
 void traversePostOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 	if(currentNode == NULL) return;
 	traversePostOrderR(currentNode->leftChild, printItem);
@@ -99,17 +149,10 @@ void traversePostOrderR(bstNode *currentNode, void(*printItem)(void *)) {
 }
 
 
-void bstTraversePreOrder(BST *bst, void(*printItem)(void *)) {
-	traversePreOrderR(bst->root, printItem);
-}
-
-void bstTraverseInOrder(BST *bst, void(*printItem)(void *)) {
-	traverseInOrderR(bst->root, printItem);
-}
-
 void bstTraversePostOrder(BST *bst, void(*printItem)(void *)) {
 	traversePostOrderR(bst->root, printItem);
 }
+
 
 void bstTraversePostOrder2(BST *bst, void(*printItem)(void *)) {
 	Stack *stack1, *stack2;
@@ -168,6 +211,7 @@ void bstTraversePostOrder3(BST *bst, void(*printItem)(void *)) {
 }
 */
 
+
 void bstTraverse(BST *bst, enum TraverseOrder traverseOrder, void(*printItem)(void *)) {
 	if(bst->root==NULL)	return;
 
@@ -178,8 +222,14 @@ void bstTraverse(BST *bst, enum TraverseOrder traverseOrder, void(*printItem)(vo
 		case PRE_ORDER:
 			bstTraversePreOrder(bst, printItem);
 			break;
+		case PRE_ORDER_2:
+			bstTraversePreOrder2(bst, printItem);
+			break;
 		case IN_ORDER:
 			bstTraverseInOrder(bst, printItem);
+			break;
+		case IN_ORDER_2:
+			bstTraverseInOrder2(bst, printItem);
 			break;
 		case POST_ORDER:
 			bstTraversePostOrder(bst, printItem);

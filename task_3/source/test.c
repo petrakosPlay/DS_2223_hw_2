@@ -39,16 +39,27 @@ int main(void) {
 	nodeCount = bstCount(bst);
 	printf("Total number of nodes is:%d\n", nodeCount);
 	
+	printf("Level order: ");
 	bstTraverse(bst, LEVEL_ORDER, printItem);
-	printf("\n");
+	printf("\n\n");
+	printf("Pre order recursive: ");
 	bstTraverse(bst, PRE_ORDER, printItem);
 	printf("\n");
+	printf("Pre order iterative: ");
+	bstTraverse(bst, PRE_ORDER_2, printItem);
+	printf("\n\n");
+	printf("In order recursive: ");
 	bstTraverse(bst, IN_ORDER, printItem);
 	printf("\n");
+	printf("In order iterative: ");
+	bstTraverse(bst, IN_ORDER_2, printItem);
+	printf("\n\n");
+	printf("Post order recursive: ");
 	bstTraverse(bst, POST_ORDER, printItem);
 	printf("\n");
+	printf("Post order iterative: ");
 	bstTraverse(bst, POST_ORDER_2, printItem);
-	printf("\n");
+	printf("\n\n");
 
 
 	bstDelete(&bst);	
