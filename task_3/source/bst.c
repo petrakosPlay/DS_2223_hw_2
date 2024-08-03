@@ -18,7 +18,16 @@ int bstCount(BST *bst) {
 	return bst->nodeCount;
 }
 
-
+/*
+bstNode * addNode(BST *bst, void *newItem) {
+	bstNode *newNode = (bstNode *) malloc(sizeof(**childNode));
+	newNode->item = malloc(bst->itemSize); 
+	memcpy(newNode->item, newItem, bst->itemSize);
+	newNode->leftChild = newNode->rightChild = NULL;
+	bst->nodeCount++;
+	return newNode;
+}
+*/
 
 
 void bstInsert(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
@@ -268,4 +277,73 @@ void bstDelete(BST **bst) {
 	free(*bst); 
 	*bst = NULL;
 }
+
+
+
+void bstLeftRotate(bstNode *parent) {
+	if(parent == NULL || parent->rightChild == NULL) return;
+	bstNode *temp = parent->rightChild;
+	parent->rightChild = temp->leftChild;
+	temp->leftChild = parent;
+}
+
+void bstRightRotate(bstNode *parent) {
+	if(parent == NULL || parent->leftChild == NULL) return;
+	bstNode *temp = parent->leftChild;
+	parent->leftChild = temp->rightChild;
+	temp->rightChild = parent;
+}
+
+
+typedef struct RouteEntry {
+		bstNode *node;
+		char direction;
+} RouteEntry;
+
+
+void bstRootInsert(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2), int *cost) {
+	*cost = 0;
+	bstNode *currentNode = NULL;
+	bstNode **childNode = (bstNode **) &(bst->root);
+	Stack *stack;
+	stackInitialize(&stack, 100, sizeof(RouteEntry));  //what if I where to start the stack with bst->nodecount positions or less??
+	RouteEntry routeEntry;
+	while(*childNode != NULL) {
+		currentNode = *childNode;
+		if(compareItem(newItem, currentNode->item) == -1) {
+			childNode = &(currentNode->leftChild);
+			routeEntry.direction = 'L';
+		}
+		else { 
+			childNode = &(currentNode->rightChild);
+			routeEntry.direction = 'R';
+		}
+		(*cost)++;
+		routeEntry.node = currentNode;
+		stackPush(stack, &routeEntry);
+	}
+	*childNode = (bstNode *) malloc(sizeof(**childNode));
+	(*childNode)->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
+	memcpy((*childNode)->item, newItem, bst->itemSize);
+	(*childNode)->leftChild = (*childNode)->rightChild = NULL;
+	bst->nodeCount++;
+	
+	bstNode *newNode = *childNode, *parentNode;
+	while(!stackIsEmpty(stack)) {
+		stackPop(stack, &routeEntry);
+		parentNode = routeEntry.node;
+		if(routeEntry.direction == 'L') {
+			parentNode->leftChild = newNode;
+			bstRightRotate(parentNode);
+		}
+		else {
+			parentNode->rightChild = newNode;
+			bstLeftRotate(parentNode);
+		}
+	}
+	bst->root = newNode;
+	stackDelete(&stack);
+}
+
+
 
