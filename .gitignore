@@ -2,7 +2,7 @@
 *.exe
 *.class
 
-#Folders
+#VScode
 .vscode
 
 #ObjectFiles
@@ -13,8 +13,9 @@ CMakeFiles
 CMakeCache.txt
 Makefile
 cmake_install.cmake
+build
 
 #Other
 *.swp
 *.swo
-
+cost.txt
