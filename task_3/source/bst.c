@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <Queue.h>
+#include <Stack.h>
 #include "bstD.h"
 #include "bstTraverseOrder.h"
-#include "Queue.h"
-#include "Stack.h"
+
+
 
 void bstInitialize(BST **bst, size_t itemSize) {
 	*bst = (BST *) malloc(sizeof(**bst));
@@ -14,8 +16,12 @@ void bstInitialize(BST **bst, size_t itemSize) {
 }
 
 
-int bstCount(BST *bst) {
+int bstNodeCount(BST *bst) {
 	return bst->nodeCount;
+}
+
+int bstIsEmpty(BST *bst) {
+	return (bst->root == NULL) ? 1 : 0;
 }
 
 /*
@@ -63,6 +69,103 @@ void bstInsertR(BST *bst, void *newItem, int(*compareItem)(void *item1, void *it
 	bst->nodeCount++;
 }
 
+
+void bstLeftRotate(bstNode *parent) {
+	if(parent == NULL || parent->rightChild == NULL) return;
+	bstNode *temp = parent->rightChild;
+	parent->rightChild = temp->leftChild;
+	temp->leftChild = parent;
+}
+
+void bstRightRotate(bstNode *parent) {
+	if(parent == NULL || parent->leftChild == NULL) return;
+	bstNode *temp = parent->leftChild;
+	parent->leftChild = temp->rightChild;
+	temp->rightChild = parent;
+}
+
+
+typedef struct RouteEntry {
+		bstNode *node;
+		char direction;
+} RouteEntry;
+
+
+void bstRootInsert(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2), int *cost) {
+	*cost = 0;
+	bstNode *currentNode = NULL;
+	bstNode **childNode = (bstNode **) &(bst->root);
+	Stack *stack;
+	stackInitialize(&stack, 100, sizeof(RouteEntry));  //what if I where to start the stack with bst->nodecount positions or less??
+	RouteEntry routeEntry;
+	while(*childNode != NULL) {
+		currentNode = *childNode;
+		if(compareItem(newItem, currentNode->item) == -1) {
+			childNode = &(currentNode->leftChild);
+			routeEntry.direction = 'L';
+		}
+		else { 
+			childNode = &(currentNode->rightChild);
+			routeEntry.direction = 'R';
+		}
+		(*cost)++;
+		routeEntry.node = currentNode;
+		stackPush(stack, &routeEntry);
+	}
+	*childNode = (bstNode *) malloc(sizeof(**childNode));
+	(*childNode)->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
+	memcpy((*childNode)->item, newItem, bst->itemSize);
+	(*childNode)->leftChild = (*childNode)->rightChild = NULL;
+	bst->nodeCount++;
+	
+	bstNode *newNode = *childNode, *parentNode;
+	while(!stackIsEmpty(stack)) {
+		stackPop(stack, &routeEntry);
+		parentNode = routeEntry.node;
+		if(routeEntry.direction == 'L') {
+			parentNode->leftChild = newNode;
+			bstRightRotate(parentNode);
+		}
+		else {
+			parentNode->rightChild = newNode;
+			bstLeftRotate(parentNode);
+		}
+	}
+	bst->root = newNode;
+	stackDelete(&stack);
+}
+
+
+bstNode * rootInsertR(bstNode **currentNode, void *newItem, size_t itemSize, int(*compareItem)(void *item1, void *item2)) {
+	if(*currentNode == NULL) {
+		*currentNode = (bstNode *) malloc(sizeof(**currentNode));
+		(*currentNode)->item = malloc(itemSize);   //assigns void * to a void * variable.No need for casting.
+		memcpy((*currentNode)->item, newItem, itemSize);
+		(*currentNode)->leftChild = (*currentNode)->rightChild = NULL;
+		return *currentNode;
+	}
+	bstNode *parent = *currentNode;
+	bstNode *newNode = NULL;
+	if(compareItem(newItem, (*currentNode)->item) == -1) {
+		currentNode = &((*currentNode)->leftChild);
+		newNode = rootInsertR(currentNode, newItem, itemSize, compareItem);
+		parent->leftChild = newNode;
+		bstRightRotate(parent);
+	}
+	else {
+		currentNode = &((*currentNode)->rightChild);
+		newNode = rootInsertR(currentNode, newItem, itemSize, compareItem);
+		parent->rightChild= newNode;
+		bstLeftRotate(parent);
+	}
+	return newNode;
+}
+
+
+void bstRootInsertR(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2)) {
+	bst->root = rootInsertR(&(bst->root), newItem, bst->itemSize, compareItem);
+	bst->nodeCount++;
+}
 
 
 /* Level Order */
@@ -279,71 +382,118 @@ void bstDelete(BST **bst) {
 }
 
 
-
-void bstLeftRotate(bstNode *parent) {
-	if(parent == NULL || parent->rightChild == NULL) return;
-	bstNode *temp = parent->rightChild;
-	parent->rightChild = temp->leftChild;
-	temp->leftChild = parent;
-}
-
-void bstRightRotate(bstNode *parent) {
-	if(parent == NULL || parent->leftChild == NULL) return;
-	bstNode *temp = parent->leftChild;
-	parent->leftChild = temp->rightChild;
-	temp->rightChild = parent;
-}
-
-
-typedef struct RouteEntry {
-		bstNode *node;
-		char direction;
-} RouteEntry;
-
-
-void bstRootInsert(BST *bst, void *newItem, int(*compareItem)(void *item1, void *item2), int *cost) {
-	*cost = 0;
-	bstNode *currentNode = NULL;
-	bstNode **childNode = (bstNode **) &(bst->root);
-	Stack *stack;
-	stackInitialize(&stack, 100, sizeof(RouteEntry));  //what if I where to start the stack with bst->nodecount positions or less??
-	RouteEntry routeEntry;
-	while(*childNode != NULL) {
-		currentNode = *childNode;
-		if(compareItem(newItem, currentNode->item) == -1) {
-			childNode = &(currentNode->leftChild);
-			routeEntry.direction = 'L';
-		}
-		else { 
-			childNode = &(currentNode->rightChild);
-			routeEntry.direction = 'R';
-		}
-		(*cost)++;
-		routeEntry.node = currentNode;
-		stackPush(stack, &routeEntry);
-	}
-	*childNode = (bstNode *) malloc(sizeof(**childNode));
-	(*childNode)->item = malloc(bst->itemSize);   //assigns void * to a void * variable.No need for casting.
-	memcpy((*childNode)->item, newItem, bst->itemSize);
-	(*childNode)->leftChild = (*childNode)->rightChild = NULL;
-	bst->nodeCount++;
+int searchR(bstNode *currentNode, void *itemToSearch, int(*compareItem)(void *item1, void *item2)) {
+	if(currentNode==NULL) return 0;	
 	
-	bstNode *newNode = *childNode, *parentNode;
-	while(!stackIsEmpty(stack)) {
-		stackPop(stack, &routeEntry);
-		parentNode = routeEntry.node;
-		if(routeEntry.direction == 'L') {
-			parentNode->leftChild = newNode;
-			bstRightRotate(parentNode);
-		}
+	switch(compareItem(itemToSearch, currentNode->item)) {
+		case 0:
+			return 1;
+			break;
+		case -1:
+			return searchR(currentNode->leftChild, itemToSearch, compareItem);
+			break;
+		case 1:
+			return searchR(currentNode->rightChild, itemToSearch, compareItem);
+			break;
+		default:
+			return 0;
+			break;
+	}
+}
+
+
+int bstSearchR(BST *bst, void *itemToSearch, int(*compareItem)(void *item1, void *item2)) {
+	if(bstIsEmpty(bst)) return 0;
+	return searchR(bst->root, itemToSearch, compareItem);
+}
+
+
+int bstSearch(BST *bst, void *itemToSearch, int(*compareItem)(void *item1, void *item2)) {
+	if(bstIsEmpty(bst)) return 0;
+	
+	bstNode *currentNode = bst->root;
+	while(currentNode != NULL) {
+		switch(compareItem(itemToSearch, currentNode->item)) {
+			case 0:
+				return 1;
+				break;
+			case -1:
+				currentNode = currentNode->leftChild;
+				break;
+			case 1:
+				currentNode = currentNode->rightChild;
+				break;
+			default:
+				return 0;
+				break;
+		}	
+	}
+	return 0;
+}
+
+
+int subBstNodeCount(bstNode *subBstRoot) {
+	if(subBstRoot == NULL) return 0;
+	int count = 1;
+	count+= subBstNodeCount(subBstRoot->leftChild);
+	count+= subBstNodeCount(subBstRoot->rightChild);
+	return count;
+}
+
+void * selectR(bstNode *currentNode, int kSmallest) {
+	int leftSubTreeNodeCount = subBstNodeCount(currentNode->leftChild);
+	if(leftSubTreeNodeCount == kSmallest - 1) return currentNode->item;
+	if(leftSubTreeNodeCount > kSmallest - 1) return selectR(currentNode->leftChild, kSmallest);
+	else return selectR(currentNode->rightChild, kSmallest - leftSubTreeNodeCount -1);
+}
+
+void * bstSelectR(BST *bst, int kSmallest) {
+	if(bstNodeCount(bst) < kSmallest)	return NULL;
+	return selectR(bst->root, kSmallest);
+}
+
+void * bstSelect(BST *bst, int kSmallest) {
+	if(bstNodeCount(bst) < kSmallest)	return NULL;
+	bstNode *currentNode = bst->root;
+	int leftSubTreeNodeCount=0; 
+	while(1) {
+		leftSubTreeNodeCount = subBstNodeCount(currentNode->leftChild);
+		if(leftSubTreeNodeCount == kSmallest - 1)	return currentNode->item;
+		if(leftSubTreeNodeCount >  kSmallest - 1)	currentNode = currentNode->leftChild;
 		else {
-			parentNode->rightChild = newNode;
-			bstLeftRotate(parentNode);
+			kSmallest = kSmallest - leftSubTreeNodeCount -1;
+			currentNode = currentNode->rightChild;
 		}
 	}
-	bst->root = newNode;
-	stackDelete(&stack);
 }
+
+
+
+bstNode * cutRightSubTreeSmallestNode(bstNode *parentNode, bstNode *rightSubTreeRoot) {
+
+	if(rightSubTreeRoot->leftChild == NULL) {
+		parentNode->rightChild = rightSubTreeRoot->rightChild;
+		return rightSubTreeRoot;
+	}
+	//if(parentNode->rightChild == NULL) return NULL;
+
+	bstNode *currentNode = rightSubTreeRoot->leftChild;
+	parentNode = rightSubTreeRoot;
+	while(currentNode->leftChild != NULL) {
+		parentNode = currentNode;
+		currentNode = currentNode->leftChild;
+	}
+	parentNode->leftChild = currentNode->rightChild;
+	return currentNode;
+
+
+}
+
+
+
+
+
+
 
 
 
